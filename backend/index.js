@@ -21,18 +21,36 @@ console.log('Loaded MONGODB_URI:', process.env.MONGODB_URI);
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, { 
+  cors: { 
+    origin: '*',
+    methods: ['GET', 'POST']
+  },
+  transports: ['websocket', 'polling']
+});
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 
 async function connectMongoDB() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
-    console.log('MongoDB connected');
+    console.log('Attempting to connect to MongoDB...');
+    const mongoURI = process.env.MONGODB_URI;
+    console.log('MongoDB URI available:', !!mongoURI);
+    await mongoose.connect(mongoURI, { 
+      useNewUrlParser: true, 
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000
+    });
+    console.log('MongoDB connected successfully');
   } catch (err) {
-    console.error('MongoDB connection error:', err.message);
-    process.exit(1);
+    console.error('MongoDB connection error:', err);
+    console.error('Full error stack:', err.stack);
+    throw err;
   }
 }
 connectMongoDB();
@@ -58,6 +76,15 @@ app.use('/profile', profileRouter);
 app.use('/groups', groupsRouter);
 app.use('/search', searchRouter);
 app.use('/users', usersRouter);
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok',
+    message: 'WhatsApp Clone Backend is running',
+    mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+  });
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
