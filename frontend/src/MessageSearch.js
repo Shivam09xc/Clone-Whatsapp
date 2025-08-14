@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000';
+const API_BASE = 'https://clone-whatsapp-mued.onrender.com';
+
 
 function MessageSearch({ onSelect }) {
   const [query, setQuery] = useState('');

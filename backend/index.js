@@ -30,7 +30,8 @@ const io = new Server(server, {
 });
 
 app.use(cors({
-  origin: '*',
+  origin: "https://clone-whatsapp-dxbp.vercel.app",
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
